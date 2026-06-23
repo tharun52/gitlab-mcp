@@ -1641,6 +1641,14 @@ export const PushFilesSchema = ProjectParamsSchema.extend({
   commit_message: z.string().describe("Commit message"),
 });
 
+export const DeleteFilesSchema = ProjectParamsSchema.extend({
+  branch: z.string().describe("Branch to delete files from"),
+  files: z
+    .array(z.string().describe("Path of the file to delete"))
+    .describe("Array of file paths to delete"),
+  commit_message: z.string().describe("Commit message"),
+});
+
 export const CreateIssueSchema = ProjectParamsSchema.extend({
   title: z.string().describe("Issue title"),
   description: z.string().optional().describe("Issue description"),
