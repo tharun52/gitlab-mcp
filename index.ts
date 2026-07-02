@@ -1020,11 +1020,11 @@ function validateConfiguration(): void {
     );
   }
 
-  if (streamableHttp && (hasToken || hasJobToken) && !remoteAuth && !mcpOAuth) {
-    errors.push(
-      "STREAMABLE_HTTP=true/--streamable-http with GITLAB_PERSONAL_ACCESS_TOKEN/--token or GITLAB_JOB_TOKEN/--job-token requires REMOTE_AUTHORIZATION=true/--remote-auth=true or GITLAB_MCP_OAUTH=true/--mcp-oauth=true"
-    );
-  }
+  // if (streamableHttp && (hasToken || hasJobToken) && !remoteAuth && !mcpOAuth) {
+  //   errors.push(
+  //     "STREAMABLE_HTTP=true/--streamable-http with GITLAB_PERSONAL_ACCESS_TOKEN/--token or GITLAB_JOB_TOKEN/--job-token requires REMOTE_AUTHORIZATION=true/--remote-auth=true or GITLAB_MCP_OAUTH=true/--mcp-oauth=true"
+  //   );
+  // }
 
   if (mcpOAuth) {
     if (!mcpServerUrl) {
