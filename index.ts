@@ -504,6 +504,7 @@ import {
   PublishDraftNoteSchema,
   PlayPipelineJobSchema,
   PushFilesSchema,
+  DeleteFilesSchema,
   RetryPipelineJobSchema,
   RetryPipelineSchema,
   SearchCodeSchema,
@@ -1045,11 +1046,11 @@ function validateConfiguration(): void {
     );
   }
 
-  if (streamableHttp && (hasToken || hasJobToken) && !remoteAuth && !mcpOAuth) {
-    errors.push(
-      "STREAMABLE_HTTP=true/--streamable-http with GITLAB_PERSONAL_ACCESS_TOKEN/--token or GITLAB_JOB_TOKEN/--job-token requires REMOTE_AUTHORIZATION=true/--remote-auth=true or GITLAB_MCP_OAUTH=true/--mcp-oauth=true"
-    );
-  }
+  // if (streamableHttp && (hasToken || hasJobToken) && !remoteAuth && !mcpOAuth) {
+  //   errors.push(
+  //     "STREAMABLE_HTTP=true/--streamable-http with GITLAB_PERSONAL_ACCESS_TOKEN/--token or GITLAB_JOB_TOKEN/--job-token requires REMOTE_AUTHORIZATION=true/--remote-auth=true or GITLAB_MCP_OAUTH=true/--mcp-oauth=true"
+  //   );
+  // }
 
   if (sse && !isLoopbackBindHost(bindHost) && !sseAuthToken && !allowUnauthenticatedRemoteSse) {
     errors.push(
@@ -9423,6 +9424,34 @@ async function handleToolCall(params: any) {
         );
         return {
           content: [{ type: "text", text: JSON.stringify(result) }],
+        };
+      }
+
+      case "delete_files": {
+        const args = DeleteFilesSchema.parse(params.arguments);
+        const projectId = decodeURIComponent(args.project_id);
+        const url = new URL(
+          `${getEffectiveApiUrl()}/projects/${encodeURIComponent(getEffectiveProjectId(projectId))}/repository/commits`
+        );
+        const response = await fetch(url.toString(), {
+          ...getFetchConfig(),
+          method: "POST",
+          body: JSON.stringify({
+            branch: args.branch,
+            commit_message: args.commit_message,
+            actions: args.files.map(file_path => ({
+              action: "delete",
+              file_path,
+            })),
+          }),
+        });
+        if (!response.ok) {
+          const errorBody = await response.text();
+          throw new Error(`GitLab API error: ${response.status} ${response.statusText}\n${errorBody}`);
+        }
+        const data = await response.json();
+        return {
+          content: [{ type: "text", text: JSON.stringify(GitLabCommitSchema.parse(data)) }],
         };
       }
 
