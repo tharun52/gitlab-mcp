@@ -32,7 +32,7 @@ const MCP_PORT_BASE = 3200;
 const TOOLSET_TOOL_COUNTS: Record<string, number> = {
   merge_requests: 41,
   issues: 24,
-  repositories: 7,
+  repositories: 9,
   branches: 15,
   projects: 10,
   labels: 5,

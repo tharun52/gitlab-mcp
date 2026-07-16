@@ -1649,6 +1649,26 @@ export const DeleteFilesSchema = ProjectParamsSchema.extend({
   commit_message: z.string().describe("Commit message"),
 });
 
+export const EditFilesSchema = ProjectParamsSchema.extend({
+  branch: z.string().describe("Branch to edit files in"),
+  files: z
+    .array(
+      z.object({
+        file_path: z.string().describe("Path of the file to edit"),
+        changes: z
+          .array(
+            z.object({
+              search: z.string().describe("Exact string to search for in the file"),
+              replace: z.string().describe("String to replace the search string with"),
+            })
+          )
+          .describe("List of search-and-replace changes to apply to the file"),
+      })
+    )
+    .describe("Array of files to edit"),
+  commit_message: z.string().describe("Commit message"),
+});
+
 export const CreateIssueSchema = ProjectParamsSchema.extend({
   title: z.string().describe("Issue title"),
   description: z.string().optional().describe("Issue description"),
