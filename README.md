@@ -111,6 +111,7 @@ docker run -i --rm \
   -e USE_MILESTONE=true \
   -e USE_PIPELINE=true \
   -e SSE=true \
+  -e SSE_AUTH_TOKEN=your_mcp_sse_token \
   -p 3333:3002 \
   zereight050/gitlab-mcp
 ```
@@ -120,7 +121,10 @@ docker run -i --rm \
   "mcpServers": {
     "gitlab": {
       "type": "sse",
-      "url": "http://localhost:3333/sse"
+      "url": "http://localhost:3333/sse",
+      "headers": {
+        "Authorization": "Bearer your_mcp_sse_token"
+      }
     }
   }
 }
@@ -267,6 +271,7 @@ the token to GitLab on behalf of the caller.
 | `REMOTE_AUTHORIZATION`   | ✅       | Set to `true` to enable                                    |
 | `STREAMABLE_HTTP`        | ✅       | Must be `true`                                             |
 | `ENABLE_DYNAMIC_API_URL` | optional | Allow per-request GitLab URL via `X-GitLab-API-URL` header |
+| `GITLAB_ALLOWED_HOSTS` | optional | Comma-separated allowed `X-GitLab-API-URL` hosts; `GITLAB_API_URL` hosts are always allowed |
 | `GITLAB_ALLOW_UNAUTHENTICATED_TOOL_DISCOVERY` | optional | Allow unauthenticated `initialize`, `notifications/initialized`, and `tools/list` only (tool calls still require auth) |
 | `MCP_TRUST_PROXY`        | optional | Trust `Forwarded` / `X-Forwarded-*` headers behind a reverse proxy (download URLs, Express `req.ip`, OAuth rate limits) |
 

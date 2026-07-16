@@ -199,6 +199,14 @@ Notes:
 
 - Requires `REMOTE_AUTHORIZATION=true`
 - Uses the `X-GitLab-API-URL` request header in HTTP mode
+- The header URL must use an allowed host: any host in `GITLAB_API_URL`, plus any host in `GITLAB_ALLOWED_HOSTS`
+
+### `GITLAB_ALLOWED_HOSTS`
+
+Comma-separated additional hosts or GitLab base/API URLs allowed for
+`X-GitLab-API-URL` when `ENABLE_DYNAMIC_API_URL=true`. This is only for hosts
+beyond those already listed in `GITLAB_API_URL`; do not repeat `GITLAB_API_URL`
+hosts here. Examples: `gitlab.example.com,https://gitlab.company.com:8443/api/v4`.
 
 ### `MCP_TRUST_PROXY`
 
@@ -389,6 +397,17 @@ Set to `true` to run the legacy SSE transport.
 Notes:
 
 - Not compatible with `REMOTE_AUTHORIZATION=true`
+- If `HOST` is not loopback, startup requires `SSE_AUTH_TOKEN` unless you explicitly set `SSE_DANGEROUSLY_ALLOW_UNAUTHENTICATED_REMOTE=true`
+
+### `SSE_AUTH_TOKEN`
+
+Bearer token required for `/sse` and `/messages` when configured.
+Use this for any network-reachable SSE deployment.
+
+### `SSE_DANGEROUSLY_ALLOW_UNAUTHENTICATED_REMOTE`
+
+Set to `true` only if you intentionally expose SSE without MCP-layer auth.
+This allows any network client to use the server's configured GitLab token.
 
 ### `HOST`
 
