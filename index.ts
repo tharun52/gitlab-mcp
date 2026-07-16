@@ -505,6 +505,7 @@ import {
   PlayPipelineJobSchema,
   PushFilesSchema,
   DeleteFilesSchema,
+  EditFilesSchema,
   RetryPipelineJobSchema,
   RetryPipelineSchema,
   SearchCodeSchema,
@@ -1051,12 +1052,6 @@ function validateConfiguration(): void {
   //     "STREAMABLE_HTTP=true/--streamable-http with GITLAB_PERSONAL_ACCESS_TOKEN/--token or GITLAB_JOB_TOKEN/--job-token requires REMOTE_AUTHORIZATION=true/--remote-auth=true or GITLAB_MCP_OAUTH=true/--mcp-oauth=true"
   //   );
   // }
-
-  if (sse && !isLoopbackBindHost(bindHost) && !sseAuthToken && !allowUnauthenticatedRemoteSse) {
-    errors.push(
-      "SSE=true on a non-loopback HOST requires SSE_AUTH_TOKEN (or explicitly set SSE_DANGEROUSLY_ALLOW_UNAUTHENTICATED_REMOTE=true)"
-    );
-  }
 
   if (mcpOAuth) {
     if (!mcpServerUrl) {
@@ -9452,6 +9447,50 @@ async function handleToolCall(params: any) {
         const data = await response.json();
         return {
           content: [{ type: "text", text: JSON.stringify(GitLabCommitSchema.parse(data)) }],
+        };
+      }
+
+      case "edit_files": {
+        const args = EditFilesSchema.parse(params.arguments);
+        const projectId = decodeURIComponent(args.project_id);
+
+        const actions = await Promise.all(
+          args.files.map(async ({ file_path, changes }) => {
+            const fileData = await getFileContents(projectId, file_path, args.branch);
+            if (Array.isArray(fileData) || !fileData.content) {
+              throw new Error(`Cannot edit directory or empty file: ${file_path}`);
+            }
+            const updatedContent = changes.reduce((content, { search, replace }) => {
+              if (!content.includes(search)) {
+                throw new Error(`Search string not found in ${file_path}: ${JSON.stringify(search)}`);
+              }
+              return content.replace(search, replace);
+            }, fileData.content);
+            return { action: "update", file_path, content: updatedContent };
+          })
+        );
+
+        const commitUrl = new URL(
+          `${getEffectiveApiUrl()}/projects/${encodeURIComponent(getEffectiveProjectId(projectId))}/repository/commits`
+        );
+        const commitResponse = await fetch(commitUrl.toString(), {
+          ...getFetchConfig(),
+          method: "POST",
+          body: JSON.stringify({
+            branch: args.branch,
+            commit_message: args.commit_message,
+            actions,
+          }),
+        });
+        if (!commitResponse.ok) {
+          const errorBody = await commitResponse.text();
+          throw new Error(
+            `GitLab API error: ${commitResponse.status} ${commitResponse.statusText}\n${errorBody}`
+          );
+        }
+        const commitData = await commitResponse.json();
+        return {
+          content: [{ type: "text", text: JSON.stringify(GitLabCommitSchema.parse(commitData)) }],
         };
       }
 

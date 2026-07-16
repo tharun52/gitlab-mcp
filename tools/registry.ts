@@ -179,6 +179,7 @@ import {
   PublishDraftNoteSchema,
   PushFilesSchema,
   DeleteFilesSchema,
+  EditFilesSchema,
   ResolveMergeRequestThreadSchema,
   RetryPipelineJobSchema,
   RetryPipelineSchema,
@@ -290,6 +291,12 @@ export const allTools = [
     name: "delete_files",
     description: "Delete multiple files in a single commit",
     inputSchema: toJSONSchema(DeleteFilesSchema),
+  },
+  {
+    name: "edit_files",
+    description:
+      "Edit multiple existing files in a single commit using search-and-replace. Each file can have multiple search-and-replace changes applied sequentially.",
+    inputSchema: toJSONSchema(EditFilesSchema),
   },
   {
     name: "create_issue",
@@ -1601,6 +1608,7 @@ export const TOOLSET_DEFINITIONS: readonly ToolsetDefinition[] = [
       "get_file_contents",
       "push_files",
       "delete_files",
+      "edit_files",
       "create_or_update_file",
       "fork_repository",
       "get_repository_tree",
